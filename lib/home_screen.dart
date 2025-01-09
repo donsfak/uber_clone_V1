@@ -18,8 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final Completer<GoogleMapController> _mapcontroller =
       Completer<GoogleMapController>();
 
-  static const LatLng _pGooglePlex = LatLng(5.3732, -3.99863);
-  static const LatLng basiliqueLatLng = LatLng(5.304291, -4.023063);
+  static const LatLng _pGooglePlex = LatLng(5.316667, -4.033333); // Abidjan
+  static const LatLng basiliqueLatLng =
+      LatLng(6.818380, -5.275950); // Yamoussoukro
+  // plateau
+
   LatLng? _currentP = null;
 
   Map<PolylineId, Polyline> polylines = {};
@@ -27,13 +30,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getLocationUpdates().then(
-      (_) => {
-        getPolylinePoints().then((coordinates) => {
-              generatePolylinesFromPoints(coordinates),
-            }),
-      },
-    );
+    getLocationUpdates().then((_) {
+      getPolylinePoints().then((coordinates) {
+        generatePolylinesFromPoints(coordinates);
+        _fitPolylineBounds(coordinates);
+      });
+    });
   }
 
   @override
@@ -102,16 +104,21 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
+      LocationData? _previousLocation;
       _locationController.onLocationChanged
           .listen((LocationData currentLocation) {
         if (currentLocation.latitude != null &&
-            currentLocation.longitude != null) {
+            currentLocation.longitude != null &&
+            (_previousLocation == null ||
+                currentLocation.latitude != _previousLocation?.latitude ||
+                currentLocation.longitude != _previousLocation?.longitude)) {
           setState(() {
             _currentP =
                 LatLng(currentLocation.latitude!, currentLocation.longitude!);
             _cameraToPosition(_currentP!);
-            print("Current Position: $_currentP");
           });
+          _previousLocation = currentLocation;
+          print("Current Position: $_currentP");
         }
       });
     } catch (e) {
@@ -123,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleApiKey: 'google_maps_api_key',
+      googleApiKey: 'AIzaSyD_rNUjBjnXv41xA0rg-jjPAo1RM501ecw',
       request: PolylineRequest(
         origin: PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
         destination:
@@ -134,26 +141,49 @@ class _HomeScreenState extends State<HomeScreen> {
     print(result.points);
     if (result.points.isNotEmpty) {
       result.points.forEach((PointLatLng point) {
-        print("Points obtenus: ${result.points.length}");
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
+      print("Polyline points: ${result.points.length}");
     } else {
-      print("Erreur dans PolylineResult: ${result.errorMessage}");
+      print("Error fetching polyline: ${result.errorMessage}");
     }
     return polylineCoordinates;
   }
 
   void generatePolylinesFromPoints(List<LatLng> polylineCoordinates) async {
+    if (polylineCoordinates.isEmpty) {
+      print("No coordinates to generate polyline.");
+      return;
+    }
+
     PolylineId id = PolylineId('poly');
     Polyline polyline = Polyline(
         polylineId: id,
         color: Colors.red,
         points: polylineCoordinates,
-        width: 8);
+        width: 5);
 
     setState(() {
       polylines[id] = polyline;
     });
     print("Polyline ajoutée avec ${polylineCoordinates.length} points.");
+  }
+
+  void _fitPolylineBounds(List<LatLng> points) async {
+    if (points.isEmpty) return;
+
+    LatLngBounds bounds = LatLngBounds(
+      southwest: points.reduce((a, b) => LatLng(
+            a.latitude < b.latitude ? a.latitude : b.latitude,
+            a.longitude < b.longitude ? a.longitude : b.longitude,
+          )),
+      northeast: points.reduce((a, b) => LatLng(
+            a.latitude > b.latitude ? a.latitude : b.latitude,
+            a.longitude > b.longitude ? a.longitude : b.longitude,
+          )),
+    );
+
+    final GoogleMapController controller = await _mapcontroller.future;
+    controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
   }
 }
