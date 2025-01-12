@@ -1,8 +1,10 @@
 # maps_clone
 
-First time I use Google maps in a project so I wanted to practice using it.
+* First time I use Google maps in a project so I wanted to practice using it.
 In a first project implement and make simulations between 2 places to obtain the distance.
-Then in a 2nd project clone an uber
+Then in a 2nd project clone an uber.
+
+* You need to configure your API key in google cloud and implement it in the project.this key is confidential
 
 ## Getting Started
 

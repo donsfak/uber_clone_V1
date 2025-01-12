@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleApiKey: 'AIzaSyD_rNUjBjnXv41xA0rg-jjPAo1RM501ecw',
+      googleApiKey: 'google_maps_api_key',
       request: PolylineRequest(
         origin: PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
         destination:
