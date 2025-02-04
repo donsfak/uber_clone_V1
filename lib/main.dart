@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:maps_clone/home_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomeScreen(),
+      home: Scaffold(
+        body: GoogleMap(
+            initialCameraPosition: CameraPosition(
+                target: LatLng(37.42796133580664, -122.085749655962),
+                zoom: 14)),
+      ),
     );
   }
 }
