@@ -12,6 +12,7 @@ android {
     defaultConfig {
         applicationId "room.ci.maps_clone"
         minSdkVersion flutter.minSdkVersion
+        //noinspection OldTargetApi
         targetSdk 34
         versionCode 1
         versionName "1.0"
