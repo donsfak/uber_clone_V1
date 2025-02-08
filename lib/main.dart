@@ -8,9 +8,16 @@ void main() {
   runApp(const MyApp());
 }
 
+enum AppState {
+  choosingLocation,
+  confirmFare,
+  waitingForPickup,
+  riding,
+  postRide,
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
