@@ -1,0 +1,61 @@
+
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: supabase-postgres
+    environment:
+      POSTGRES_PASSWORD: "123"
+    ports:
+      - "5432:5432"
+    networks:
+      supabase-network:  # ✅ Correct : mapping
+
+  api:
+    image: postgrest/postgrest:v10.2.0
+    environment:
+      PGRST_DB_URI: "postgres://postgres:123@postgres:5432/postgres"
+      PGRST_DB_SCHEMAS: "public"
+      PGRST_DB_ANON_ROLE: "anon"
+    ports:
+      - "54322:3000"
+    networks:
+      supabase-network:  # ✅ Correct : mapping
+    depends_on:
+      - postgres
+
+  auth:
+    image: supabase/gotrue:v2.30.0
+    environment:
+      GOTRUE_DATABASE_URL: "postgres://postgres:123@postgres:5432/postgres"
+      GOTRUE_SITE_URL: "http://localhost:3000"
+    ports:
+      - "9999:9999"
+    networks:
+      supabase-network:  # ✅ Correct : mapping
+    depends_on:
+      - postgres
+
+  storage:
+    image: supabase/storage-api:v0.10.0
+    environment:
+      POSTGRES_PASSWORD: "123"
+    ports:
+      - "9000:9000"
+    networks:
+      supabase-network:  # ✅ Correct : mapping
+    depends_on:
+      - postgres
+
+  studio:
+    image: supabase/studio:latest
+    ports:
+      - "3000:3000"
+    networks:
+      supabase-network:  # ✅ Correct : mapping
+    depends_on:
+      - api
+
+networks:
+  supabase-network:
+    driver: bridge
